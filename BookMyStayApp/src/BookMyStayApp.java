@@ -1,8 +1,7 @@
-// Version 3.1
-// Use Case 3: Centralized Room Inventory Management
+// Version 4.1
+// Use Case 4: Room Search & Availability Check
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 // ---------------- ABSTRACT ROOM CLASS ----------------
 abstract class Room {
@@ -43,25 +42,21 @@ abstract class Room {
     }
 }
 
-
 // ---------------- ROOM TYPES ----------------
 
 class SingleRoom extends Room {
-
     public SingleRoom() {
         super("Single Room", 1, 200, 1500);
     }
 }
 
 class DoubleRoom extends Room {
-
     public DoubleRoom() {
         super("Double Room", 2, 350, 2500);
     }
 }
 
 class SuiteRoom extends Room {
-
     public SuiteRoom() {
         super("Suite Room", 3, 600, 5000);
     }
@@ -72,38 +67,48 @@ class SuiteRoom extends Room {
 
 class RoomInventory {
 
-    // Centralized HashMap
     private HashMap<String, Integer> inventory;
 
-    // Constructor to initialize inventory
     public RoomInventory() {
+
         inventory = new HashMap<>();
 
         inventory.put("Single Room", 5);
-        inventory.put("Double Room", 3);
+        inventory.put("Double Room", 3);   // Now available
         inventory.put("Suite Room", 2);
     }
 
-    // Retrieve availability
     public int getAvailability(String roomType) {
         return inventory.getOrDefault(roomType, 0);
     }
+}
 
-    // Update availability
-    public void updateAvailability(String roomType, int count) {
-        inventory.put(roomType, count);
+
+// ---------------- SEARCH SERVICE ----------------
+
+class RoomSearchService {
+
+    private RoomInventory inventory;
+
+    public RoomSearchService(RoomInventory inventory) {
+        this.inventory = inventory;
     }
 
-    // Display entire inventory
-    public void displayInventory() {
+    public void searchAvailableRooms(List<Room> rooms) {
 
-        System.out.println("\n===== Current Room Inventory =====");
+        System.out.println("\n===== Available Rooms =====");
 
-        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
-            System.out.println(entry.getKey() + " Available : " + entry.getValue());
+        for (Room room : rooms) {
+
+            int available = inventory.getAvailability(room.getRoomType());
+
+            if (available > 0) {
+
+                room.displayRoomDetails();
+                System.out.println("Available Rooms : " + available);
+                System.out.println("---------------------------");
+            }
         }
-
-        System.out.println("==================================");
     }
 }
 
@@ -114,38 +119,29 @@ public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        System.out.println("===== BookMyStay Room Inventory System =====");
+        System.out.println("===== BookMyStay Room Search =====");
 
-        // Create room objects
+        // Create Room Objects
         Room single = new SingleRoom();
         Room doubleRoom = new DoubleRoom();
         Room suite = new SuiteRoom();
 
-        // Initialize inventory
+        // Store rooms in a list
+        List<Room> roomList = new ArrayList<>();
+
+        roomList.add(single);
+        roomList.add(doubleRoom);
+        roomList.add(suite);
+
+        // Initialize Inventory
         RoomInventory inventory = new RoomInventory();
 
-        // Display room details
-        System.out.println("\n--- Room Details ---");
+        // Initialize Search Service
+        RoomSearchService searchService = new RoomSearchService(inventory);
 
-        single.displayRoomDetails();
-        System.out.println();
+        // Guest searches available rooms
+        searchService.searchAvailableRooms(roomList);
 
-        doubleRoom.displayRoomDetails();
-        System.out.println();
-
-        suite.displayRoomDetails();
-
-        // Display inventory
-        inventory.displayInventory();
-
-        // Example update
-        System.out.println("\nUpdating Single Room Availability...\n");
-
-        inventory.updateAvailability("Single Room", 4);
-
-        // Display updated inventory
-        inventory.displayInventory();
-
-        System.out.println("\nApplication Terminated.");
+        System.out.println("\nSearch Completed (Inventory Unchanged)");
     }
 }
